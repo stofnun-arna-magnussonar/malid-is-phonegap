@@ -1,0 +1,13 @@
+{
+  "name": "org.arnastofnun.malid",
+  "version": "1.0.0",
+  "displayName": "Málið.is",
+  "cordova": {
+    "platforms": [
+      "android"
+    ]
+  },
+  "dependencies": {
+    "cordova-android": "~7.0.0"
+  }
+}
