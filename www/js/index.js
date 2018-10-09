@@ -8,6 +8,21 @@ var app = {
 		document.addEventListener('deviceready', this.onDeviceReady, false);
 	},
 
+	exitApp: function() {
+		console.log('exitApp');
+		if (navigator.app) {
+			navigator.app.exitApp();
+		} else if (navigator.device) {
+			navigator.device.exitApp();
+		} else {
+			window.close();
+		}
+	},
+
+	onBrowserClose: function() {
+		this.exitApp();
+	},
+
 	onDeviceReady: function() {
 		var networkState = navigator.connection.type;
 
@@ -15,7 +30,9 @@ var app = {
 			document.getElementById('noConnection').setAttribute('style', 'display:block;');
 		}
 		else {
-			cordova.InAppBrowser.open('http://malid.is', '_self', 'location=no,zoom=no,hideurlbar=yes');
+			var browserRef = cordova.InAppBrowser.open('http://malid.is', '_self', 'location=no,zoom=no,hideurlbar=yes');
+
+			browserRef.addEventListener('exit', this.onBrowserClose)
 		}
 	}
 };
