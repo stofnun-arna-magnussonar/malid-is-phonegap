@@ -1,53 +1,100 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 var app = {
-    // Application Constructor
-    initialize: function() {
-        this.bindEvents();
-    },
-    // Bind Event Listeners
-    //
-    // Bind any events that are required on startup. Common events are:
-    // 'load', 'deviceready', 'offline', and 'online'.
-    bindEvents: function() {
-        document.addEventListener('deviceready', this.onDeviceReady, false);
-    },
-    // deviceready Event Handler
-    //
-    // The scope of 'this' is the event. In order to call the 'receivedEvent'
-    // function, we must explicitly call 'app.receivedEvent(...);'
-    onDeviceReady: function() {
-        app.receivedEvent('deviceready');
 
-        var browserStatus = cordova.InAppBrowser.open('http://malid.is', '_self', 'location=no,zoom=no,hideurlbar=yes');
+	initialize: function() {
+		this.bindEvents();
+	},
 
-        console.log(browserStatus)
-    },
-    // Update DOM on a Received Event
-    receivedEvent: function(id) {
-        var parentElement = document.getElementById(id);
-        var listeningElement = parentElement.querySelector('.listening');
-        var receivedElement = parentElement.querySelector('.received');
+	bindEvents: function() {
+		document.addEventListener('deviceready', this.onDeviceReady, false);
+	},
 
-        listeningElement.setAttribute('style', 'display:none;');
-        receivedElement.setAttribute('style', 'display:block;');
+	onDeviceReady: function() {
+		var initialized = false;
 
-        console.log('Received Event: ' + id);
-    }
+		var initializeApp = function() {
+			console.log('onDeviceReady')
+			var networkState = navigator.connection.type;
+
+			if (networkState == Connection.NONE) {
+				document.getElementById('noConnection').setAttribute('style', 'display:block;');
+
+				if (!this.initialized) {
+					document.getElementById('retryButton').addEventListener('click', initializeApp, false);
+					console.log('add addEventListener')
+				}
+			}
+			else {
+				var checkBrowserUrl;
+				var browserRef = cordova.InAppBrowser.open('http://malid.is/leit/hestur', '_blank', 'location=no,zoom=no,hideurlbar=yes');
+
+				browserRef.addEventListener('exit', function() {
+					// Lokum appinu ef inAppBrowser lokast, gerist ef ýtt er á bakk-takkann á tækinu á forsíðu málsins.is
+					if (navigator.app) {
+						navigator.app.exitApp();
+					} else if (navigator.device) {
+						navigator.device.exitApp();
+					} else {
+						window.close();
+					}
+				}, false);
+
+				browserRef.addEventListener('loadstop', function() {
+					browserRef.insertCSS({
+						code: `
+							.navbar {
+								height: 350px;
+							}
+							nav img {
+								max-width: 120px;
+							}
+						`
+					});
+
+					// Bæti við JavaScript sem athugar alla tengla sem eru opnaðir. Ef þeir tilheyra ekki síðum sem
+					// tengdar eru við málið.is eru þær opnaðar í ytri vafra í tækinu (ekki inAppBrowser)
+					browserRef.executeScript({
+						code: `
+							var elements = document.getElementsByTagName('a');
+							for(var i = 0, len = elements.length; i < len; i++) {
+								elements[i].onclick = function (event) {
+									var linkHref = event.currentTarget.href;
+
+									if (!linkHref.match(/bin.arnastofnun.is|malid.is|islenskordabok.arnastofnun.is|ordanet.arnastofnun.is|ordanet.is|ordabanki.hi.is/)) {
+										event.preventDefault();
+
+										localStorage.setItem('openUrl', linkHref);
+									}
+								}
+							}
+
+							localStorage.setItem('openUrl', '');
+						`
+					}, function() {
+						if (checkBrowserUrl) {
+							clearInterval(checkBrowserUrl);
+						}
+
+						checkBrowserUrl = setInterval(function() {
+							browserRef.executeScript({
+								code: "localStorage.getItem('openUrl')"
+							}, function(values) {
+								openUrl = values[0];
+								if (openUrl != '') {
+									browserRef.executeScript({
+										code: "localStorage.setItem('openUrl', '');"
+									});
+
+									window.open(openUrl, '_system');
+								}
+							});
+						}, 100);
+					});
+				});
+			}
+
+			initialized = true;
+		}
+
+		initializeApp();
+	}
 };

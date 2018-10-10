@@ -37,6 +37,13 @@ body {
 	color: #545454;
 }
 
+#noConnection a {
+	border-bottom: dotted 1px;
+
+	font-weight: bold;
+	color: #118593;
+}
+
 
 .app-logo {
 	width: 100%;
