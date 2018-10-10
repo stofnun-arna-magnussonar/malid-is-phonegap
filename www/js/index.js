@@ -8,21 +8,6 @@ var app = {
 		document.addEventListener('deviceready', this.onDeviceReady, false);
 	},
 
-	exitApp: function() {
-		console.log('exitApp');
-		if (navigator.app) {
-			navigator.app.exitApp();
-		} else if (navigator.device) {
-			navigator.device.exitApp();
-		} else {
-			window.close();
-		}
-	},
-
-	onBrowserClose: function() {
-		this.exitApp();
-	},
-
 	onDeviceReady: function() {
 		var networkState = navigator.connection.type;
 
@@ -30,9 +15,74 @@ var app = {
 			document.getElementById('noConnection').setAttribute('style', 'display:block;');
 		}
 		else {
-			var browserRef = cordova.InAppBrowser.open('http://malid.is', '_self', 'location=no,zoom=no,hideurlbar=yes');
+			var checkBrowserUrl;
+			var browserRef = cordova.InAppBrowser.open('http://malid.is/leit/hestur', '_blank', 'location=no,zoom=no,hideurlbar=yes');
 
-			browserRef.addEventListener('exit', this.onBrowserClose)
+			browserRef.addEventListener('exit', function() {
+				// Lokum appinu ef inAppBrowser lokast, gerist ef ýtt er á bakk-takkann á tækinu á forsíðu málsins.is
+				if (navigator.app) {
+					navigator.app.exitApp();
+				} else if (navigator.device) {
+					navigator.device.exitApp();
+				} else {
+					window.close();
+				}
+			}, false);
+
+			browserRef.addEventListener('loadstop', function() {
+				browserRef.insertCSS({
+					code: `
+						.navbar {
+							height: 350px;
+						}
+						nav img {
+							max-width: 120px;
+						}
+					`
+				});
+
+				// Bæti við JavaScript sem athugar alla tengla sem eru opnaðir. Ef þeir tilheyra ekki síðum sem
+				// tengdar eru við málið.is eru þær opnaðar í ytri vafra í tækinu (ekki inAppBrowser)
+				browserRef.executeScript({
+					code: `
+						var elements = document.getElementsByTagName('a');
+						for(var i = 0, len = elements.length; i < len; i++) {
+							elements[i].onclick = function (event) {
+								var linkHref = event.currentTarget.href;
+
+								if (!linkHref.match(/bin.arnastofnun.is|malid.is|islenskordabok.arnastofnun.is|ordanet.arnastofnun.is|ordanet.is|ordabanki.hi.is/)) {
+									event.preventDefault();
+
+									localStorage.setItem('openUrl', linkHref);
+								}
+							}
+						}
+
+						localStorage.setItem('openUrl', '');
+					`
+				}, function() {
+					console.log('callBack')
+					if (checkBrowserUrl) {
+						clearInterval(checkBrowserUrl);
+					}
+
+					checkBrowserUrl = setInterval(function() {
+						console.log('checkBrowserUrl '+checkBrowserUrl);
+						browserRef.executeScript({
+							code: "localStorage.getItem('openUrl')"
+						}, function(values) {
+							openUrl = values[0];
+							if (openUrl != '') {
+								browserRef.executeScript({
+									code: "localStorage.setItem('openUrl', '');"
+								});
+
+								window.open(openUrl, '_system');
+							}
+						});
+					}, 100);
+				});
+			});
 		}
 	}
 };
