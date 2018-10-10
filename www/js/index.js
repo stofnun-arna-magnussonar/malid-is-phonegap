@@ -25,7 +25,7 @@ var app = {
 			}
 			else {
 				var checkBrowserUrl;
-				var browserRef = cordova.InAppBrowser.open('http://malid.is/leit/hestur', '_blank', 'location=no,zoom=no,hideurlbar=yes');
+				var browserRef = cordova.InAppBrowser.open('http://malid.is', '_blank', 'location=no,zoom=no,hideurlbar=yes');
 
 				browserRef.addEventListener('exit', function() {
 					// Lokum appinu ef inAppBrowser lokast, gerist ef ýtt er á bakk-takkann á tækinu á forsíðu málsins.is
