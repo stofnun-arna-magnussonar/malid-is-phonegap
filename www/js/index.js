@@ -41,11 +41,11 @@ var app = {
 				browserRef.addEventListener('loadstop', function() {
 					browserRef.insertCSS({
 						code: `
-							.navbar {
-								height: 350px;
-							}
-							nav img {
-								max-width: 120px;
+							.survey-overlay {
+								display: none !important;
+								opacity: 0 !important;
+								pointer-events: none !important;
+								visibility: hidden !important;
 							}
 						`
 					});

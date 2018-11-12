@@ -1,11 +1,11 @@
 {
   "background_color": "#FFF",
   "display": "standalone",
-  "name": "Málið.is",
-  "short_name": "Málið.is",
+  "name": "Málið",
+  "short_name": "Málið",
   "version": "org.arnastofnun.malid",
-  "description": "Hello World sample application that responds to the deviceready event.",
-  "author": "PhoneGap Team",
+  "description": "Smáforrit fyrir Málið.is",
+  "author": "Stofnun Árna Magnússonar í íslenskum fræðum",
   "icons": [],
   "start_url": "index.html"
 }

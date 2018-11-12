@@ -25,7 +25,7 @@ var app = {
 			}
 			else {
 				var checkBrowserUrl;
-				var browserRef = cordova.InAppBrowser.open('http://malid.is/leit/hestur', '_blank', 'location=no,zoom=no,hideurlbar=yes');
+				var browserRef = cordova.InAppBrowser.open('http://malid.is', '_blank', 'location=no,zoom=no,hideurlbar=yes');
 
 				browserRef.addEventListener('exit', function() {
 					// Lokum appinu ef inAppBrowser lokast, gerist ef ýtt er á bakk-takkann á tækinu á forsíðu málsins.is
@@ -41,11 +41,11 @@ var app = {
 				browserRef.addEventListener('loadstop', function() {
 					browserRef.insertCSS({
 						code: `
-							.navbar {
-								height: 350px;
-							}
-							nav img {
-								max-width: 120px;
+							.survey-overlay {
+								display: none !important;
+								opacity: 0 !important;
+								pointer-events: none !important;
+								visibility: hidden !important;
 							}
 						`
 					});
